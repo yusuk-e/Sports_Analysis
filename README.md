@@ -6,3 +6,5 @@ input_ver0.py
 　ボールの位置情報 B[frame_id]
 　
 input_ver1.py
+ 読み込み部
+ 選手の位置情報 D[  
