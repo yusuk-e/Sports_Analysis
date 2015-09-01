@@ -12,19 +12,21 @@ import random
 from collections import defaultdict
 from collections import namedtuple
 
+
 #variable---------------------------------------------------------------------------------
 Team_dic = [0,1]
 Player_Team0_dic = []
 Player_Team1_dic = []
 sys_id_dic = []
+info_dic = []
 frame_id_min = 10 ** 14
 frame_id_max = -10 ** 14
 Foo_p = namedtuple("Foo_p", "x, y, v, mx, my, m")
 #x座標，y座標，速度，x軸方向のメッシュid，y軸方向のメッシュid，通し番号のメッシュid（左上はじまり）
 Foo_b = namedtuple("Foo_b", "x,y,z,v,Team,Status,info")
 #x座標，y座標，z座標，速度，保持しているチームid，ボールが生きてるかどうか，追加情報
-
 Foo_player = namedtuple("Foo_player", "f, x, y, v, mx, my, m")
+#フレーム番号，x座標，y座標，速度，x軸方向のメッシュid，y軸方向のメッシュid，通し番号のメッシュid（左上はじまり）
 
 #xmax = 0
 #xmin = 0
@@ -41,9 +43,11 @@ Dy = 20 #y方向のメッシュ分割数
 M_Team0 = np.zeros([Dy, Dx])
 M_Team1 = np.zeros([Dy, Dx])
 #-----------------------------------------------------------------------------------------
+
+
+#Input------------------------------------------------------------------------------------
 counter = 0
 t0 = time()
-#------------------------------------------------------------------------------------
 filename = "udp.out"
 #filename = "udp_small.out"
 D = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) 
@@ -93,11 +97,6 @@ for row in fin:
         f = Foo_p(new_x, new_y, float(temp2[5]), Mx_id, My_id, M_id)
         D[frame_id][Team_id][Player_id] = f
 
-        if Team_id == 0:
-            M_Team0[My_id, Mx_id] += 1
-        if Team_id == 1:
-            M_Team1[My_id, Mx_id] += 1
-
         if f.x < 0 or f.y < 0:
             print err
         #if f.x > xmax:
@@ -127,6 +126,9 @@ for row in fin:
         f = Foo_b(float(temp3[0]), float(temp3[1]), float(temp3[2]), float(temp3[3]), int(temp3[4]), temp3[5], "")
     elif len(temp3) == 7:
         f = Foo_b(float(temp3[0]), float(temp3[1]), float(temp3[2]), float(temp3[3]), int(temp3[4]), temp3[5], temp3[6])
+        info = temp3[6]
+        if info not in info_dic:
+            info_dic.append(info)
     else:
         print "err"
 
@@ -142,8 +144,39 @@ for row in fin:
     #    ymin = f.y
 
 fin.close()
-#-----------------------------------------------------------------------------------------
+
 print "time:%f" % (time()-t0)
+#-----------------------------------------------------------------------------------------
+
+
+#pdb.set_trace()
+#今だけ--------------
+frame_id_max = int(frame_id_max - (frame_id_max - frame_id_min + 1) / 2) - 2000 #適当に前半だけ分析
+#--------------
+
+
+#全体のようす（いまはいらないかな）---------------
+'''
+if Team_id == 0:
+    M_Team0[My_id, Mx_id] += 1
+if Team_id == 1:
+    M_Team1[My_id, Mx_id] += 1
+
+fig = plt.figure()
+plt.imshow(M_Team0)
+plt.savefig('Mesh/M_Team0.png')
+plt.close()
+
+fig = plt.figure()
+plt.imshow(M_Team1)
+plt.savefig('Mesh/M_Team1.png')
+plt.close()
+'''
+#-----------------------------------------------
+
+
+#プレイヤー毎の行列作成-------------------------------------------------------------------
+t0 = time()
 
 D_Team0 = defaultdict(int) #選手の位置情報 D[Player_id]
 D_Team1 = defaultdict(int) #選手の位置情報 D[Player_id]
@@ -153,65 +186,31 @@ for i in range(N):
     x_Team0 = D[n][0]
     N_Player_Team0 = len(Player_Team0_dic)
 
-    if i == 0:
-        for j in range(N_Player_Team0):
-            Player_Team0_id = Player_Team0_dic[j]
-            x = x_Team0[Player_Team0_id]
-            pdb.set_trace()
-            f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
-            D_Team0[Player_Team0_id] = f
+    for j in range(N_Player_Team0):
+    #for j in range(2):
+        Player_Team0_id = Player_Team0_dic[j]
+        x = x_Team0[Player_Team0_id]
 
-    else:
-        for j in range(N_Player_Team0):
-            Player_Team0_id = Player_Team0_dic[j]
-            x = x_Team0[Player_Team0_id]
+        if np.size(D_Team0[Player_Team0_id]) == 1: #D_Team0にまだデータがない選手の場合
+            if np.size(x) == 6: #xが構造体を持つ場合
+                f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
+                D_Team0[Player_Team0_id] = f
 
-
-            #ダメ---------------------------------------
-            #        if D_Team0[Player_Team0_id] == 0 and x != 0:
-            #if i == 0:
-            #    #pdb.set_trace()
-            #    print x.x
-            #    #            print f
-            #    f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
-            #    D_Team0[Player_Team0_id] = f
-
-            if x != 0:
-                #            f = Foo_player(n, x.x, x.y, x.v, x.mx, x.my, x.m)
+        else:
+            if np.size(x) == 6:#xが構造体を持つ場合
                 f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
                 D_Team0[Player_Team0_id] = np.vstack([D_Team0[Player_Team0_id],f])
-        #ダメ---------------------------------------
 
-
-    x_Team1 = D[n][1]
-    N_Player_Team1 = len(Player_Team1_dic)
-    for j in range(N_Player_Team1):
-        Player_Team1_id = Player_Team1_dic[j]
-        x = x_Team1[Player_Team1_id]
-
-
-        #ダメ---------------------------------------
-#        if D_Team1[Player_Team1_id] == 0 and x != 0:
-#            pdb.set_trace()
-#            f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
-#            D_Team1[Player_Team1_id] = f
-
-#        if i !=0 and x != 0:
-#            f = Foo_player(n, x.x, x.y, x.v, x.mx, x.my, x.m)
-#            f = np.array([n, x.x, x.y, x.v, x.mx, x.my, x.m])
-#            D_Team1[Player_Team1_id] = np.vstack([D_Team1[Player_Team1_id],f])
-        #ダメ---------------------------------------
-
-
-#    D_Team0_Player[
 
 M = np.zeros([Dy, Dx])
 for j in range(N_Player_Team0):
+#for j in range(2):
     Player_Team0_id = Player_Team0_dic[j]
     X = D_Team0[Player_Team0_id][:,1]
     Y = D_Team0[Player_Team0_id][:,2]
     fig = plt.figure()
     plt.plot(X,Y)
+    plt.axis([0.0,new_xmax,0.0,new_ymax])
     plt.savefig('Tracking/Tracking_Team'+str(0)+'_Player'+str(Player_Team0_id)+'.png')
     plt.close()
 
@@ -225,19 +224,11 @@ for j in range(N_Player_Team0):
     plt.savefig('Mesh/M_Team0'+'_Player'+str(Player_Team0_id)+'.png')
     plt.close()
 
+
+print "time:%f" % (time()-t0)
+#-----------------------------------------------------------------------------
+
     
 
-pdb.set_trace()
-
-#出力------------------------------------------------------------------------
-fig = plt.figure()
-plt.imshow(M_Team0)
-plt.savefig('Mesh/M_Team0.png')
-plt.close()
-
-fig = plt.figure()
-plt.imshow(M_Team1)
-plt.savefig('Mesh/M_Team1.png')
-plt.close()
 
 pdb.set_trace()
