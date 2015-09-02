@@ -5,6 +5,8 @@ from time import time
 import datetime as dt
 import numpy as np
 from scipy.special import gammaln
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import resource
 import codecs
