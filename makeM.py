@@ -178,7 +178,7 @@ plt.close()
 #-----------------------------------------------
 
 
-#プレイヤー毎の行列作成-------------------------------------------------------------------
+#プレイヤー毎のヒートマップ作成-----------------------------------------------
 t0 = time()
 
 D_Team0 = defaultdict(int) #選手の位置情報 D[Player_id]
@@ -205,7 +205,6 @@ for i in range(N):
                 D_Team0[Player_Team0_id] = np.vstack([D_Team0[Player_Team0_id],f])
 
 
-M = np.zeros([Dy, Dx])
 for j in range(N_Player_Team0):
 #for j in range(2):
     Player_Team0_id = Player_Team0_dic[j]
@@ -220,6 +219,7 @@ for j in range(N_Player_Team0):
 
         Mx = D_Team0[Player_Team0_id][:,4]
         My = D_Team0[Player_Team0_id][:,5]
+        M = np.zeros([Dy, Dx])
         for k in range(len(Mx)):
             M[My[k],Mx[k]] += 1
 
@@ -233,7 +233,12 @@ print "time:%f" % (time()-t0)
 #-----------------------------------------------------------------------------
 
     
+#{ユーザ，場所}*時間の行列作成-----------------------------------------------
+t0 = time()
 
 
-pdb.set_trace()
+
+print "time:%f" % (time()-t0)
+#-----------------------------------------------------------------------------
+
 pdb.set_trace()
