@@ -51,8 +51,8 @@ M_Team1 = np.zeros([Dy, Dx])
 #Input------------------------------------------------------------------------------------
 counter = 0
 t0 = time()
-filename = "udp.out"
-#filename = "udp_small.out"
+#filename = "udp.out"
+filename = "udp_small.out"
 D = defaultdict(lambda: defaultdict(lambda: defaultdict(int))) 
 #選手の位置情報 D[frame_id][Team_id][Player_id]
 B = defaultdict(int) #ボールの位置情報 B[frame_id]
@@ -209,23 +209,24 @@ M = np.zeros([Dy, Dx])
 for j in range(N_Player_Team0):
 #for j in range(2):
     Player_Team0_id = Player_Team0_dic[j]
-    X = D_Team0[Player_Team0_id][:,1]
-    Y = D_Team0[Player_Team0_id][:,2]
-    fig = plt.figure()
-    plt.plot(X,Y)
-    plt.axis([0.0,new_xmax,0.0,new_ymax])
-    plt.savefig('Tracking/Tracking_Team'+str(0)+'_Player'+str(Player_Team0_id)+'.png')
-    plt.close()
+    if np.size(D_Team0[Player_Team0_id]) != 1:
+        X = D_Team0[Player_Team0_id][:,1]
+        Y = D_Team0[Player_Team0_id][:,2]
+        fig = plt.figure()
+        plt.plot(X,Y)
+        plt.axis([0.0,new_xmax,0.0,new_ymax])
+        plt.savefig('Tracking/Tracking_Team'+str(0)+'_Player'+str(Player_Team0_id)+'.png')
+        plt.close()
 
-    Mx = D_Team0[Player_Team0_id][:,4]
-    My = D_Team0[Player_Team0_id][:,5]
-    for k in range(len(Mx)):
-        M[My[k],Mx[k]] += 1
+        Mx = D_Team0[Player_Team0_id][:,4]
+        My = D_Team0[Player_Team0_id][:,5]
+        for k in range(len(Mx)):
+            M[My[k],Mx[k]] += 1
 
-    fig = plt.figure()
-    plt.imshow(M)
-    plt.savefig('Mesh/M_Team0'+'_Player'+str(Player_Team0_id)+'.png')
-    plt.close()
+        fig = plt.figure()
+        plt.imshow(M)
+        plt.savefig('Mesh/M_Team0'+'_Player'+str(Player_Team0_id)+'.png')
+        plt.close()
 
 
 print "time:%f" % (time()-t0)
