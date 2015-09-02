@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+#プレイヤー毎の位置情報に基づいてメッシュにおけるヒートマップに変換
 
 import pdb
 from time import time
@@ -6,7 +7,7 @@ import datetime as dt
 import numpy as np
 from scipy.special import gammaln
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg') #DISPLAYの設定
 import matplotlib.pyplot as plt
 import resource
 import codecs
@@ -233,4 +234,5 @@ print "time:%f" % (time()-t0)
     
 
 
+pdb.set_trace()
 pdb.set_trace()
